@@ -1,0 +1,5 @@
+com\osf\sp\advice\LogAdvice.class
+com\osf\sp\vo\EmpVO.class
+com\osf\sp\controller\NaverTranslationController.class
+com\osf\sp\dao\impl\NaverTranslationDAOImpl.class
+com\osf\sp\HomeController.class

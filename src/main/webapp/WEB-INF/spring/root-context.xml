@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.2.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd">
+	
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	<bean id="hikariDS" class="com.zaxxer.hikari.HikariDataSource">
+		<property name="jdbcUrl" value=""/>
+		<property name="username" value=""/>
+		<property name="password" value=""/>
+		<property name="driverClassName" value="oracle.jdbc.OracleDriver"/>
+		<property name="maximumPoolSize" value="10"/>
+		<property name="minimumIdle" value="5"/>
+	</bean>
+	<bean id="proxyDS" class="net.sf.log4jdbc.Log4jdbcProxyDataSource">
+		<constructor-arg ref="hikariDS"/>
+	</bean>
+	<bean id="ssFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="proxyDS"/>
+		<property name="configLocation" value="classpath:spw/config/mybatis-config.xml"/>
+	</bean>
+	<bean id="ss" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg ref="ssFactory"/>
+	</bean>
+	
+		<bean id ="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="proxyDS"/>
+	</bean>
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="save*" rollback-for="Exception"/>
+		</tx:attributes>
+	</tx:advice>
+	<aop:config>
+		<aop:pointcut id="txPointcut" expression="execution(* com.osf.sp.service.impl.*ServiceImpl.*(..))"/>
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut"/>
+	</aop:config>
+</beans>
